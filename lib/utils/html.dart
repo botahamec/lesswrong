@@ -29,6 +29,8 @@ class HtmlParser {
   final String _input;
   int _position = 0;
 
+  static const escapeCharacters = {'amp': '&', 'nbsp': ' '};
+
   HtmlParser._(this._input);
 
   String _nextChar() {
@@ -69,8 +71,11 @@ class HtmlParser {
         (97 <= c.codeUnitAt(0) && c.codeUnitAt(0) <= 122));
   }
 
-  // TODO escaped characters (&amp;)
   HtmlText _parseText() {
+    String text = _consumeWhile((c) => c != '<');
+    for (final mapping in escapeCharacters.entries) {
+      text = text.replaceAll('&${mapping.key};', mapping.value);
+    }
     return HtmlText(_consumeWhile((c) => c != '<'));
   }
 
