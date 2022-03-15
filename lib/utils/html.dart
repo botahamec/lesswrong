@@ -69,6 +69,7 @@ class HtmlParser {
         (97 <= c.codeUnitAt(0) && c.codeUnitAt(0) <= 122));
   }
 
+  // TODO escaped characters (&amp;)
   HtmlText _parseText() {
     return HtmlText(_consumeWhile((c) => c != '<'));
   }
@@ -82,7 +83,7 @@ class HtmlParser {
   }
 
   Attribute _parseAttribute() {
-    final name = _parseTagName();
+    final name = _parseTagName().toLowerCase();
     assert(_consumeChar() == '=');
     final value = _parseAttributeValue();
     return Attribute(name, value);
@@ -105,9 +106,22 @@ class HtmlParser {
   HtmlElement _parseElement() {
     // open tag
     assert(_consumeChar() == '<');
-    final tagName = _parseTagName();
+    final tagName = _parseTagName().toLowerCase();
     final attributes = _parseAttributes();
-    assert(_consumeChar() == '>');
+    final isSelfClosingChar = _consumeChar();
+    final isSelfClosingTag = isSelfClosingChar == '/';
+    if (isSelfClosingTag) {
+      assert(_consumeChar() == '>');
+    } else {
+      assert(isSelfClosingChar == '>');
+    }
+
+    if (isSelfClosingTag ||
+        tagName == 'br' ||
+        tagName == 'img' ||
+        tagName == 'hr') {
+      return HtmlElement(tagName: tagName, attributeMap: attributes);
+    }
 
     // contents
     final children = _parseNodes();
