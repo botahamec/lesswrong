@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:lesswrong/screens/home.dart';
+
+import 'screens/home.dart';
 
 void main() async {
   await initHiveForFlutter();

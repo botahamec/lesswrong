@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:lesswrong/models/post.dart';
-import 'package:lesswrong/utils/time.dart';
+
+import '../models/post.dart';
+import '../utils/time.dart';
 
 import '../screens/post.dart';
 
