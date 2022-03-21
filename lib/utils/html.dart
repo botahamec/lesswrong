@@ -1,9 +1,18 @@
-abstract class HtmlNode {}
+import 'style.dart';
+
+abstract class HtmlNode {
+  StyleNode styleTree(StyleSheet sheet);
+}
 
 class HtmlText implements HtmlNode {
   final String text;
 
   const HtmlText(this.text);
+
+  @override
+  StyleNode styleTree(StyleSheet sheet) {
+    return StyleNode(node: this, propertyMap: {}, children: []);
+  }
 }
 
 class HtmlElement implements HtmlNode {
@@ -16,6 +25,35 @@ class HtmlElement implements HtmlNode {
     this.attributeMap = const {},
     this.children = const [],
   });
+
+  String? get id => attributeMap['id'];
+
+  Set<String> get classes => attributeMap['class']?.split(' ').toSet() ?? {};
+
+  Set<Rule> matchingRules(StyleSheet style) {
+    return style.rules.where((rule) => rule.matches(this)).toSet();
+  }
+
+  Map<String, dynamic> specifiedValues(StyleSheet style) {
+    final Map<String, dynamic> values = {};
+
+    for (final rule in style.rules) {
+      for (final declaration in rule.declarations) {
+        values[declaration.name] = declaration.value;
+      }
+    }
+
+    return values;
+  }
+
+  @override
+  StyleNode styleTree(StyleSheet style) {
+    return StyleNode(
+      node: this,
+      propertyMap: specifiedValues(style),
+      children: children.map((c) => styleTree(style)).toList(),
+    );
+  }
 }
 
 class Attribute {
@@ -76,7 +114,7 @@ class HtmlParser {
     for (final mapping in escapeCharacters.entries) {
       text = text.replaceAll('&${mapping.key};', mapping.value);
     }
-    return HtmlText(_consumeWhile((c) => c != '<'));
+    return HtmlText(text);
   }
 
   String _parseAttributeValue() {
@@ -102,7 +140,7 @@ class HtmlParser {
         break;
       }
       final attribute = _parseAttribute();
-      attributes.addEntries({attribute.key: attribute.value}.entries);
+      attributes[attribute.key] = attribute.value;
     }
 
     return attributes;
@@ -121,6 +159,7 @@ class HtmlParser {
       assert(isSelfClosingChar == '>');
     }
 
+    // self-closing tags
     if (isSelfClosingTag ||
         tagName == 'br' ||
         tagName == 'img' ||
@@ -165,7 +204,7 @@ class HtmlParser {
     return nodes;
   }
 
-  HtmlNode parse(String input) {
+  static HtmlNode parse(String input) {
     var nodes = HtmlParser._(input)._parseNodes();
 
     if (nodes.length == 1) {
