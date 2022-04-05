@@ -50,6 +50,8 @@ class Declaration {
   Declaration({required this.name, required this.value});
 }
 
+enum Display { inline, block, none }
+
 class StyleNode {
   final HtmlNode node;
   final Map<String, dynamic> propertyMap;
@@ -60,4 +62,17 @@ class StyleNode {
     this.propertyMap = const {},
     this.children = const [],
   });
+
+  Display display() {
+    final value = propertyMap["display"];
+    if (value is! String) {
+      return Display.inline;
+    } else if (value == "block") {
+      return Display.block;
+    } else if (value == "none") {
+      return Display.none;
+    } else {
+      return Display.inline;
+    }
+  }
 }
