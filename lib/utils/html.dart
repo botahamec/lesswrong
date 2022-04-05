@@ -37,7 +37,7 @@ class HtmlElement implements HtmlNode {
   Map<String, dynamic> specifiedValues(StyleSheet style) {
     final Map<String, dynamic> values = {};
 
-    for (final rule in style.rules) {
+    for (final rule in matchingRules(style)) {
       for (final declaration in rule.declarations) {
         values[declaration.name] = declaration.value;
       }
@@ -51,7 +51,7 @@ class HtmlElement implements HtmlNode {
     return StyleNode(
       node: this,
       propertyMap: specifiedValues(style),
-      children: children.map((c) => styleTree(style)).toList(),
+      children: children.map((c) => c.styleTree(style)).toList(),
     );
   }
 }
@@ -70,6 +70,10 @@ class HtmlParser {
   static const escapeCharacters = {'amp': '&', 'nbsp': ' '};
 
   HtmlParser._(this._input);
+
+  static void _assert(bool statement) {
+    assert(statement);
+  }
 
   String _nextChar() {
     return _input[_position];
@@ -119,15 +123,15 @@ class HtmlParser {
 
   String _parseAttributeValue() {
     final openQuote = _consumeChar();
-    assert(openQuote == '"' || openQuote == "'");
+    _assert(openQuote == '"' || openQuote == "'");
     final value = _consumeWhile((c) => c != openQuote);
-    assert(_consumeChar() == openQuote);
+    _assert(_consumeChar() == openQuote);
     return value;
   }
 
   Attribute _parseAttribute() {
     final name = _parseTagName().toLowerCase();
-    assert(_consumeChar() == '=');
+    _assert(_consumeChar() == '=');
     final value = _parseAttributeValue();
     return Attribute(name, value);
   }
@@ -148,15 +152,15 @@ class HtmlParser {
 
   HtmlElement _parseElement() {
     // open tag
-    assert(_consumeChar() == '<');
+    _assert(_consumeChar() == '<');
     final tagName = _parseTagName().toLowerCase();
     final attributes = _parseAttributes();
     final isSelfClosingChar = _consumeChar();
     final isSelfClosingTag = isSelfClosingChar == '/';
     if (isSelfClosingTag) {
-      assert(_consumeChar() == '>');
+      _assert(_consumeChar() == '>');
     } else {
-      assert(isSelfClosingChar == '>');
+      _assert(isSelfClosingChar == '>');
     }
 
     // self-closing tags
@@ -171,10 +175,10 @@ class HtmlParser {
     final children = _parseNodes();
 
     // closing tag
-    assert(_consumeChar() == '<');
-    assert(_consumeChar() == '/');
-    assert(_parseTagName() == tagName);
-    assert(_consumeChar() == '>');
+    _assert(_consumeChar() == '<');
+    _assert(_consumeChar() == '/');
+    _assert(_parseTagName() == tagName);
+    _assert(_consumeChar() == '>');
 
     return HtmlElement(
       tagName: tagName,
