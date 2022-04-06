@@ -5,7 +5,8 @@ import '../models/post.dart';
 import '../widgets/logo.dart';
 import '../widgets/post_item.dart';
 
-const recommendedPostsQuery = """
+const recommendedPostsQuery =
+    """
 {Recommendations(
   count: 2
   algorithm: {
@@ -65,10 +66,9 @@ class Recommendations extends StatelessWidget {
         }
 
         if (result.isLoading) {
-          return const Flexible(
-              child: Padding(
-                  padding: EdgeInsets.only(top: 30),
-                  child: Center(child: CircularProgressIndicator())));
+          return const Padding(
+              padding: EdgeInsets.only(top: 30),
+              child: Center(child: CircularProgressIndicator()));
         }
 
         final List<Map<String, dynamic>> recommendedPosts =
